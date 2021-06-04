@@ -1,0 +1,49 @@
+module Space
+exports all
+definitions
+types
+     Point = token;
+     Angle = token;
+     Position :: point : Point angle : Angle;
+     Length = token;
+     BaseArea :: center : Point;
+     Direction = <North>|<South>|<East>|<West>;
+     Id = nat;
+     Marker :: center : Point direction : Direction id : Id;
+     FruitsType = token;
+     Fruits :: center : Point direction : Direction fruitsType : FruitsType;
+     Partition = token;
+     Task = set of FruitsType;
+     Waypoint = Position;
+     Route = seq of Waypoint;
+
+values
+     baseAreaSize : Length = mk_token("short");
+
+state Course of
+    baseArea : BaseArea
+    markers : set of Marker
+    fruits : set of Fruits
+    partitions : set of Partition
+inv mk_Course(b, m, f, p) ==
+    (forall marker in set m & marker.center <> b.center) and (card m = card {marker.id | marker in set m})
+    
+init c == c = mk_Course(mk_BaseArea(mk_token("a")), {}, {}, {})
+end
+
+operations
+    setBaseArea : Point ==> ()
+    setBaseArea(point) == baseArea .center := point;
+    
+    addMarker : Point * Direction * Id ==> ()
+    addMarker(point, direction, id) == markers := markers union {mk_Marker(point, direction, id)}
+    pre forall marker in set markers & marker.center <> point and marker.id <> id
+    post exists1 marker in set markers & marker.center = point and marker.direction = direction and marker.id = id;
+    
+    removeMarker : Id ==> ()
+    removeMarker(id) == markers := {marker | marker in set markers & marker.id <> id}
+    pre exists1 marker in set markers & marker.id = id
+    post forall marker in set markers & marker.id <> id;
+
+end Space
+
